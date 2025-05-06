@@ -141,3 +141,4 @@ if __name__ == '__main__':
     parser.add_argument("CORPUS", help="Path to CSV file with song data")
     args = parser.parse_args()
     main(args.CORPUS)
+    
