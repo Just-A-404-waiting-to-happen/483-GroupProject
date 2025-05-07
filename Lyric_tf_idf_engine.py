@@ -7,6 +7,16 @@ from typing import Dict, List, Set
 
 
 class IRSystem:
+    MOOD_KEYWORDS = {
+        'happy': ['happy', 'joy', 'celebrate', 'dancing', 'sunshine', 'smile', 'laugh'],
+        'loving': ['love', 'heart', 'darling', 'baby', 'sweet', 'romance', 'kiss'],
+        'angry': ['angry', 'mad', 'hate', 'rage', 'fight', 'war', 'kill'],
+        'sad': ['sad', 'lonely', 'cry', 'tears', 'miss', 'pain', 'hurt'],
+        'chill': ['calm', 'peace', 'relax', 'easy', 'cool', 'mellow', 'chill'],
+        'nostalgic': ['remember', 'memory', 'old days', 'back then'],
+        'energetic': ['energy', 'pump', 'jump', 'move', 'party']
+    }
+
     def __init__(self, csv_path: str):
         """Initialize with memory-efficient CSV processing"""
         self.df = collections.defaultdict(int)  # Document frequency
@@ -76,6 +86,10 @@ class IRSystem:
                     print(f"Skipping row due to error: {e}")
                     self.doc_vectors.append({})  # Empty vector for failed docs
 
+    def mood_to_query(self, mood: str) -> str:
+        """Convert mood keywords into a search query string"""
+        return ' OR '.join(self.MOOD_KEYWORDS.get(mood.lower(), []))
+
     def run_query(self, query: str) -> List[Dict]:
         """Run query and return results with metadata"""
         terms = query.lower().split()
@@ -123,12 +137,17 @@ def main(corpus: str):
         print("Initializing search system...")
         ir = IRSystem(corpus)
         print(f"Ready. Index contains {ir.num_documents} documents.")
-
-        while True:
-            query = input('Query (or "exit" to quit): ').strip()
-            if query.lower() == 'exit':
-                break
-            results = ir.run_query(query)
+        print("Running sentiment on Pop")
+        # while True:
+        #     query = input('Query (or "exit" to quit): ').strip()
+        #     if query.lower() == 'exit':
+        #         break
+        #     results = ir.run_query(query)
+        #     for result in results:
+        #         print(f"{result['score']:.4f} | {result['artist']} - {result['title']}")
+        for mood in ir.MOOD_KEYWORDS:
+            print("\nMood: ", mood, "----------------------------------------\n")
+            results = ir.run_query(ir.mood_to_query(mood))
             for result in results:
                 print(f"{result['score']:.4f} | {result['artist']} - {result['title']}")
 
@@ -141,4 +160,3 @@ if __name__ == '__main__':
     parser.add_argument("CORPUS", help="Path to CSV file with song data")
     args = parser.parse_args()
     main(args.CORPUS)
-    
